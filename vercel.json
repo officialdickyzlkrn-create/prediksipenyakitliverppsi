@@ -1,5 +1,8 @@
 {
-  "buildCommand": "npm run build:frontend",
-  "outputDirectory": "dist/public",
-  "installCommand": "npm install -g pnpm && pnpm install"
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm install -g pnpm && pnpm install",
+  "env": {
+    "NODE_ENV": "production"
+  }
 }
