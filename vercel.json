@@ -1,16 +1,14 @@
 {
-  "buildCommand": "cd client && vite build",
+  "buildCommand": "cd client && pnpm run build",
   "outputDirectory": "dist/public",
   "installCommand": "pnpm install",
-  "framework": "vite",
   "env": {
     "NODE_ENV": "production"
   },
-  "routes": [
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "/index.html",
-      "status": 200
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
