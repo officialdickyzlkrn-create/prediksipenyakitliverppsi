@@ -51,18 +51,46 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  // Use process.cwd() which is more reliable after bundling
-  const distPath = path.join(process.cwd(), "dist", "public");
+  // Try multiple possible paths to find dist/public
+  let distPath: string;
+  
+  // Path 1: Relative to current working directory (most common)
+  const cwd = process.cwd();
+  const cwdPath = path.join(cwd, "dist", "public");
+  
+  // Path 2: Relative to __dirname (fallback for bundled code)
+  const dirPath = path.join(__dirname, "..", "..", "dist", "public");
+  
+  // Path 3: Check if we're in /vercel/output (Vercel environment)
+  const vercelPath = "/vercel/output/dist/public";
+  
+  if (fs.existsSync(cwdPath)) {
+    distPath = cwdPath;
+  } else if (fs.existsSync(dirPath)) {
+    distPath = dirPath;
+  } else if (fs.existsSync(vercelPath)) {
+    distPath = vercelPath;
+  } else {
+    distPath = cwdPath; // fallback, will error below
+  }
+  
   if (!fs.existsSync(distPath)) {
     console.error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`
+      `Could not find the build directory. Tried: ${cwdPath}, ${dirPath}, ${vercelPath}`
     );
+  } else {
+    console.log(`[Server] Serving static files from: ${distPath}`);
   }
 
   app.use(express.static(distPath));
 
   // fall through to index.html if the file doesn't exist
   app.use("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+    const indexPath = path.resolve(distPath, "index.html");
+    if (!fs.existsSync(indexPath)) {
+      res.status(404).send("index.html not found");
+      return;
+    }
+    res.sendFile(indexPath);
   });
 }
